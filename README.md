@@ -49,7 +49,7 @@ Any fetch that needs a browser should prefer Tabbit Browser first. Only fall bac
 ### Installation
 
 ```bash
-npx skills add joeseesun/markdown-proxy
+npx skills add asiyoua/markdown-proxy
 ```
 
 Verify:
@@ -155,7 +155,7 @@ Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright 
 ### 安装
 
 ```bash
-npx skills add joeseesun/markdown-proxy
+npx skills add asiyoua/markdown-proxy
 ```
 
 验证：

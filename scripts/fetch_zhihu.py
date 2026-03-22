@@ -38,7 +38,12 @@ EXTRACT_ARTICLE_JS = r"""
     document.title ||
     ""
   );
-  const author = clean(header?.querySelector('a[href*="/people/"]')?.innerText || "");
+  const author = clean(
+    header?.querySelector('a[href*="/people/"]')?.innerText ||
+    article.querySelector('a[href*="/people/"]')?.innerText ||
+    article.querySelector('[class*="AuthorInfo"] a')?.innerText ||
+    ""
+  );
   const publishTime = clean(article.querySelector(".ContentItem-time")?.innerText || "");
 
   function inline(node) {

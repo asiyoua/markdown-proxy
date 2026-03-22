@@ -18,8 +18,8 @@ description: |
 
 | URL 特征 | 路由到 | 原因 |
 |----------|--------|------|
-| `mp.weixin.qq.com` | 内置 `scripts/fetch_weixin.py` | 公众号有反爬，需 Playwright 抓取 |
-| `zhuanlan.zhihu.com` | 内置 `scripts/fetch_zhihu.py` | 知乎专栏更适合直接从正文 DOM 提取 |
+| `mp.weixin.qq.com` | 内置 `scripts/fetch_weixin.py`（优先 Tabbit） | 公众号有反爬，需真实浏览器渲染 |
+| `zhuanlan.zhihu.com` | 内置 `scripts/fetch_zhihu.py`（优先 Tabbit） | 知乎专栏更适合直接从正文 DOM 提取 |
 | `feishu.cn` / `larksuite.com`（文档/知识库） | 内置 `scripts/fetch_feishu.py` | 需要飞书 API 认证 |
 | `youtube.com` / `youtu.be` | `yt-search-download` skill | YouTube 有专用工具链 |
 | 其他所有 URL | 代理服务级联（见下方） |  |

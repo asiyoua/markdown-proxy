@@ -17,8 +17,8 @@ Send any URL to Claude, and it automatically fetches the full content as Markdow
 
 | URL Type | Method | Why |
 |----------|--------|-----|
-| WeChat Articles (`mp.weixin.qq.com`) | Built-in Playwright script | Anti-scraping protection requires headless browser |
-| Zhihu Zhuanlan (`zhuanlan.zhihu.com`) | Built-in Playwright script | Cleaner extraction from the article DOM |
+| WeChat Articles (`mp.weixin.qq.com`) | Built-in browser extractor (Tabbit first) | Anti-scraping protection requires real browser rendering |
+| Zhihu Zhuanlan (`zhuanlan.zhihu.com`) | Built-in browser extractor (Tabbit first) | Cleaner extraction from the article DOM |
 | Feishu/Lark Docs (`feishu.cn`, `larksuite.com`) | Built-in Feishu API script | Requires API authentication, auto-converts to Markdown |
 | YouTube | Dedicated YouTube skill | Video content has its own toolchain |
 | All other URLs | Proxy cascade: r.jina.ai → defuddle.md → agent-fetch | Free, no API key needed |
@@ -31,12 +31,12 @@ Any fetch that needs a browser should prefer Tabbit Browser first. Only fall bac
 
 - [ ] [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 - [ ] **curl** (built-in on macOS/Linux)
-- [ ] (WeChat scraping) Python 3.8+ with playwright
+- [ ] (Browser-based extraction) Python 3.8+ with playwright
   ```bash
   pip install playwright
   playwright install chromium
   ```
-  The WeChat script prefers locally installed Tabbit Browser and falls back to Playwright's bundled Chromium.
+  Browser-based scripts prefer locally installed Tabbit Browser and only fall back to Chrome/Chromium when needed.
 - [ ] (Proxy fallback) [agent-fetch](https://github.com/teng-lin/agent-fetch) — local fallback when online proxies fail
   ```bash
   npx agent-fetch --help  # No pre-install needed, npx auto-downloads
@@ -86,7 +86,7 @@ Built-in `fetch_feishu.py` script fetches documents via Feishu Open API and auto
 
 ### Zhihu Zhuanlan Support
 
-Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright and converts the main article body to Markdown:
+Built-in `fetch_zhihu.py` script uses the Tabbit-first browser extractor (driven by Playwright) to convert the main Zhihu Zhuanlan article body to Markdown:
 
 - Targets the main `article` / `.Post-RichTextContainer` body
 - Preserves inline image links in Markdown
@@ -109,7 +109,7 @@ Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright 
 - [r.jina.ai](https://r.jina.ai) — Free URL-to-Markdown proxy by Jina AI
 - [defuddle.md](https://defuddle.md) — Clean article extraction service
 - [agent-fetch](https://github.com/teng-lin/agent-fetch) — Local URL content extraction tool
-- [Playwright](https://playwright.dev/) — Browser automation for WeChat scraping
+- [Playwright](https://playwright.dev/) — Browser automation runtime used by the built-in browser extractors
 - [Feishu Open Platform](https://open.feishu.cn/) — Feishu Document API
 
 ---
@@ -123,8 +123,8 @@ Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright 
 
 | URL 类型 | 抓取方式 | 原因 |
 |----------|---------|------|
-| 微信公众号 (`mp.weixin.qq.com`) | 内置 Playwright 脚本 | 公众号有反爬，需无头浏览器 |
-| 知乎专栏 (`zhuanlan.zhihu.com`) | 内置 Playwright 脚本 | 更适合直接从正文 DOM 提取 |
+| 微信公众号 (`mp.weixin.qq.com`) | 内置浏览器抓取（优先 Tabbit） | 公众号有反爬，需真实浏览器渲染 |
+| 知乎专栏 (`zhuanlan.zhihu.com`) | 内置浏览器抓取（优先 Tabbit） | 更适合直接从正文 DOM 提取 |
 | 飞书文档 (`feishu.cn/docx/`, `/wiki/`, `/docs/`) | 内置飞书 API 脚本 | 需要 API 认证，自动转 Markdown |
 | YouTube | 专用 YouTube skill | 视频内容有专用工具链 |
 | 其他所有 URL | 代理级联：r.jina.ai → defuddle.md → agent-fetch | 免费、无需 API key |
@@ -137,12 +137,12 @@ Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright 
 
 - [ ] 已安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [ ] **curl**（macOS/Linux 自带）
-- [ ] （公众号抓取）Python 3.8+ 及 playwright
+- [ ] （浏览器抓取）Python 3.8+ 及 playwright
   ```bash
   pip install playwright
   playwright install chromium
   ```
-  公众号脚本默认优先使用本机已安装的 Tabbit Browser；没有时回退到 Playwright 自带 Chromium。
+  浏览器抓取脚本默认优先使用本机已安装的 Tabbit Browser；只有抓取失败时才回退到 Chrome/Chromium。
 - [ ] （代理降级）[agent-fetch](https://github.com/teng-lin/agent-fetch) — 当在线代理都失败时的本地回退工具
   ```bash
   npx agent-fetch --help  # 无需预装，npx 自动下载
@@ -193,7 +193,7 @@ ls ~/.claude/skills/markdown-proxy/SKILL.md
 
 ### 知乎专栏支持
 
-内置 `fetch_zhihu.py` 脚本，通过 Playwright 抓取知乎专栏正文并转为 Markdown：
+内置 `fetch_zhihu.py` 脚本，通过“优先 Tabbit 的内置浏览器抓取器”（由 Playwright 驱动）抓取知乎专栏正文并转为 Markdown：
 
 - 直接抓取 `article` / `.Post-RichTextContainer` 主体
 - 保留正文中的图片链接
@@ -216,7 +216,7 @@ ls ~/.claude/skills/markdown-proxy/SKILL.md
 - [r.jina.ai](https://r.jina.ai) — Jina AI 提供的免费 URL 转 Markdown 代理
 - [defuddle.md](https://defuddle.md) — 干净的文章提取服务
 - [agent-fetch](https://github.com/teng-lin/agent-fetch) — 本地 URL 内容提取工具
-- [Playwright](https://playwright.dev/) — 微信公众号抓取的浏览器自动化
+- [Playwright](https://playwright.dev/) — 内置浏览器抓取器所使用的浏览器自动化运行时
 - [飞书开放平台](https://open.feishu.cn/) — 飞书文档 API
 
 ---

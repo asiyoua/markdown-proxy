@@ -19,6 +19,7 @@ description: |
 | URL 特征 | 路由到 | 原因 |
 |----------|--------|------|
 | `mp.weixin.qq.com` | 内置 `scripts/fetch_weixin.py` | 公众号有反爬，需 Playwright 抓取 |
+| `zhuanlan.zhihu.com` | 内置 `scripts/fetch_zhihu.py` | 知乎专栏更适合直接从正文 DOM 提取 |
 | `feishu.cn` / `larksuite.com`（文档/知识库） | 内置 `scripts/fetch_feishu.py` | 需要飞书 API 认证 |
 | `youtube.com` / `youtu.be` | `yt-search-download` skill | YouTube 有专用工具链 |
 | 其他所有 URL | 代理服务级联（见下方） |  |
@@ -52,6 +53,10 @@ if URL contains "mp.weixin.qq.com":
     → Step A: 公众号抓取
     → 结束
 
+if URL contains "zhuanlan.zhihu.com":
+    → Step A2: 知乎专栏抓取
+    → 结束
+
 if URL contains "feishu.cn/docx/" or "feishu.cn/wiki/" or "feishu.cn/docs/" or "larksuite.com/docx/":
     → Step B: 飞书文档抓取
     → 结束
@@ -72,6 +77,17 @@ python3 ~/.claude/skills/markdown-proxy/scripts/fetch_weixin.py "WEIXIN_URL"
 
 依赖：`playwright`（优先使用本机已安装的 Tabbit Browser；Tabbit 不可用或抓取失败时才回退到 Chromium）
 输出：YAML frontmatter（title, author, date, url, source）+ Markdown 正文（正文内保留公众号图片链接）
+失败时回退到 Step 1-2 代理服务。
+
+### Step A2: 知乎专栏抓取（内置）
+
+```bash
+python3 ~/.claude/skills/markdown-proxy/scripts/fetch_zhihu.py "ZHIHU_URL"
+```
+
+依赖：`playwright`（优先使用本机已安装的 Tabbit Browser；抓取失败时自动回退到 Chrome/Chromium）
+支持：知乎专栏 `zhuanlan.zhihu.com/p/...`
+输出：YAML frontmatter（title, author, date, url, source）+ Markdown 正文（正文内保留图片链接）
 失败时回退到 Step 1-2 代理服务。
 
 ### Step B: 飞书文档抓取（内置）
@@ -166,11 +182,17 @@ python3 ~/.claude/skills/markdown-proxy/scripts/fetch_feishu.py "https://xxx.fei
 python3 ~/.claude/skills/markdown-proxy/scripts/fetch_feishu.py "https://xxx.feishu.cn/wiki/xxxxxxxx"
 ```
 
+### 知乎专栏
+```bash
+python3 ~/.claude/skills/markdown-proxy/scripts/fetch_zhihu.py "https://zhuanlan.zhihu.com/p/123456789"
+```
+
 ## Notes
 
 - r.jina.ai 和 defuddle.md 均免费、无需 API key
 - 任何需要浏览器参与的抓取都默认优先使用 Tabbit Browser；只有 Tabbit 不可用或抓取失败时才回退到 Chrome/Chromium（需 `pip install playwright && playwright install chromium`）
 - 公众号脚本直接从浏览器 DOM 提取正文和图片链接，不依赖 `beautifulsoup4`
+- 知乎脚本优先从 `article .Post-RichTextContainer` 提取正文，避免把推荐阅读、广告和外围 UI 一起带入 Markdown
 - 飞书文档使用内置 API 脚本（需环境变量 `FEISHU_APP_ID` + `FEISHU_APP_SECRET`）
 - 飞书脚本自动将 blocks 转为 Markdown（标题、列表、代码块、引用、待办等）
 - 对于超长内容，可用 `| head -n 200` 先预览

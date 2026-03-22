@@ -13,11 +13,12 @@
 
 ### Features
 
-Send any URL to Claude, and it automatically fetches the full content as Markdown. Four special platforms have dedicated extraction:
+Send any URL to Claude, and it automatically fetches the full content as Markdown. Five special platforms have dedicated extraction:
 
 | URL Type | Method | Why |
 |----------|--------|-----|
 | WeChat Articles (`mp.weixin.qq.com`) | Built-in Playwright script | Anti-scraping protection requires headless browser |
+| Zhihu Zhuanlan (`zhuanlan.zhihu.com`) | Built-in Playwright script | Cleaner extraction from the article DOM |
 | Feishu/Lark Docs (`feishu.cn`, `larksuite.com`) | Built-in Feishu API script | Requires API authentication, auto-converts to Markdown |
 | YouTube | Dedicated YouTube skill | Video content has its own toolchain |
 | All other URLs | Proxy cascade: r.jina.ai → defuddle.md → agent-fetch | Free, no API key needed |
@@ -64,6 +65,7 @@ Just send Claude a URL:
 - "Fetch this tweet: https://x.com/user/status/123456"
 - "Read this WeChat article: https://mp.weixin.qq.com/s/abc123"
 - "Convert this Feishu doc to Markdown: https://xxx.feishu.cn/docx/xxxxxxxx"
+- "Read this Zhihu article: https://zhuanlan.zhihu.com/p/123456789"
 
 ### Proxy Priority
 
@@ -82,11 +84,21 @@ Built-in `fetch_feishu.py` script fetches documents via Feishu Open API and auto
 - Requires `FEISHU_APP_ID` and `FEISHU_APP_SECRET` environment variables
 - App needs `docx:document:readonly` permission
 
+### Zhihu Zhuanlan Support
+
+Built-in `fetch_zhihu.py` script fetches Zhihu Zhuanlan articles via Playwright and converts the main article body to Markdown:
+
+- Targets the main `article` / `.Post-RichTextContainer` body
+- Preserves inline image links in Markdown
+- Avoids recommended content, ads, and most surrounding Zhihu UI
+- Prefers Tabbit Browser first and falls back to Chrome/Chromium when needed
+
 ### Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | WeChat scraping fails | Run `playwright install chromium` to install browser |
+| Zhihu extraction includes too much page chrome | Use the built-in `fetch_zhihu.py` path instead of generic proxies |
 | Feishu returns permission error | Check `FEISHU_APP_ID` and `FEISHU_APP_SECRET` env vars, confirm app has document read permission |
 | Feishu wiki page fails | Confirm app has `wiki:wiki:readonly` permission |
 | r.jina.ai returns empty | Auto-falls back to defuddle.md (no action needed) |
@@ -107,11 +119,12 @@ Built-in `fetch_feishu.py` script fetches documents via Feishu Open API and auto
 
 ### 功能
 
-给 Claude 发一个 URL，自动抓取完整内容并转为 Markdown。支持四种特殊平台的专用抓取：
+给 Claude 发一个 URL，自动抓取完整内容并转为 Markdown。支持五种特殊平台的专用抓取：
 
 | URL 类型 | 抓取方式 | 原因 |
 |----------|---------|------|
 | 微信公众号 (`mp.weixin.qq.com`) | 内置 Playwright 脚本 | 公众号有反爬，需无头浏览器 |
+| 知乎专栏 (`zhuanlan.zhihu.com`) | 内置 Playwright 脚本 | 更适合直接从正文 DOM 提取 |
 | 飞书文档 (`feishu.cn/docx/`, `/wiki/`, `/docs/`) | 内置飞书 API 脚本 | 需要 API 认证，自动转 Markdown |
 | YouTube | 专用 YouTube skill | 视频内容有专用工具链 |
 | 其他所有 URL | 代理级联：r.jina.ai → defuddle.md → agent-fetch | 免费、无需 API key |
@@ -159,6 +172,7 @@ ls ~/.claude/skills/markdown-proxy/SKILL.md
 - "读一下这篇公众号：https://mp.weixin.qq.com/s/abc123"
 - "把这个飞书文档转成 Markdown：https://xxx.feishu.cn/docx/xxxxxxxx"
 - "读一下这个飞书知识库页面：https://xxx.feishu.cn/wiki/xxxxxxxx"
+- "读一下这篇知乎专栏：https://zhuanlan.zhihu.com/p/123456789"
 
 ### 代理优先级
 
@@ -177,11 +191,21 @@ ls ~/.claude/skills/markdown-proxy/SKILL.md
 - 需要飞书应用的 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET` 环境变量
 - 应用需要 `docx:document:readonly` 权限
 
+### 知乎专栏支持
+
+内置 `fetch_zhihu.py` 脚本，通过 Playwright 抓取知乎专栏正文并转为 Markdown：
+
+- 直接抓取 `article` / `.Post-RichTextContainer` 主体
+- 保留正文中的图片链接
+- 尽量避开推荐阅读、广告和外围知乎 UI
+- 默认优先使用 Tabbit Browser，失败时回退到 Chrome/Chromium
+
 ### 常见问题
 
 | 问题 | 解决方法 |
 |------|---------.|
 | 公众号抓取失败 | 运行 `playwright install chromium` 安装浏览器 |
+| 知乎正文抓取不干净 | 优先使用内置 `fetch_zhihu.py`，不要只依赖通用代理 |
 | 飞书文档返回权限错误 | 检查 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET` 环境变量，确认应用有文档读取权限 |
 | 飞书知识库页面抓取失败 | 确认应用有 `wiki:wiki:readonly` 权限 |
 | r.jina.ai 返回空内容 | 自动降级到 defuddle.md（无需手动操作） |

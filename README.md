@@ -22,15 +22,20 @@ Send any URL to Claude, and it automatically fetches the full content as Markdow
 | YouTube | Dedicated YouTube skill | Video content has its own toolchain |
 | All other URLs | Proxy cascade: r.jina.ai → defuddle.md → agent-fetch | Free, no API key needed |
 
+WeChat Markdown output keeps image links inline in the article body and does not duplicate them in YAML frontmatter by default.
+
+Any fetch that needs a browser should prefer Tabbit Browser first. Only fall back to Chrome/Chromium when Tabbit cannot extract the page correctly.
+
 ### Prerequisites
 
 - [ ] [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 - [ ] **curl** (built-in on macOS/Linux)
 - [ ] (WeChat scraping) Python 3.8+ with playwright
   ```bash
-  pip install playwright beautifulsoup4 lxml
+  pip install playwright
   playwright install chromium
   ```
+  The WeChat script prefers locally installed Tabbit Browser and falls back to Playwright's bundled Chromium.
 - [ ] (Proxy fallback) [agent-fetch](https://github.com/teng-lin/agent-fetch) — local fallback when online proxies fail
   ```bash
   npx agent-fetch --help  # No pre-install needed, npx auto-downloads
@@ -111,15 +116,20 @@ Built-in `fetch_feishu.py` script fetches documents via Feishu Open API and auto
 | YouTube | 专用 YouTube skill | 视频内容有专用工具链 |
 | 其他所有 URL | 代理级联：r.jina.ai → defuddle.md → agent-fetch | 免费、无需 API key |
 
+微信公众号 Markdown 输出默认只在正文内保留图片链接，不在 YAML frontmatter 里重复列出。
+
+任何需要浏览器参与的抓取都应优先使用 Tabbit Browser。只有 Tabbit 无法正确抓取时，才回退到 Chrome/Chromium。
+
 ### 前置条件
 
 - [ ] 已安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [ ] **curl**（macOS/Linux 自带）
 - [ ] （公众号抓取）Python 3.8+ 及 playwright
   ```bash
-  pip install playwright beautifulsoup4 lxml
+  pip install playwright
   playwright install chromium
   ```
+  公众号脚本默认优先使用本机已安装的 Tabbit Browser；没有时回退到 Playwright 自带 Chromium。
 - [ ] （代理降级）[agent-fetch](https://github.com/teng-lin/agent-fetch) — 当在线代理都失败时的本地回退工具
   ```bash
   npx agent-fetch --help  # 无需预装，npx 自动下载

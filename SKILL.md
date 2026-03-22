@@ -23,6 +23,17 @@ description: |
 | `youtube.com` / `youtu.be` | `yt-search-download` skill | YouTube 有专用工具链 |
 | 其他所有 URL | 代理服务级联（见下方） |  |
 
+## 浏览器优先级（严格执行）
+
+凡是需要浏览器参与的抓取，统一按这个优先级执行：
+
+1. **Tabbit Browser**
+2. **Chrome / Chromium / Playwright 自带 Chromium**
+
+- 默认先用 Tabbit
+- 只有 Tabbit 无法正确抓取、页面渲染异常、或目标站点明确不兼容时，才允许回退到 Chrome/Chromium
+- 不要先用 MCP 默认浏览器试探，再切回 Tabbit；第一次浏览器抓取就应优先使用 Tabbit
+
 ## 代理服务优先级
 
 | 优先级 | 服务 | URL 模式 | 优势 |
@@ -59,8 +70,8 @@ else:
 python3 ~/.claude/skills/markdown-proxy/scripts/fetch_weixin.py "WEIXIN_URL"
 ```
 
-依赖：`playwright`、`beautifulsoup4`、`lxml`
-输出：YAML frontmatter（title, author, date, url）+ Markdown 正文
+依赖：`playwright`（优先使用本机已安装的 Tabbit Browser；Tabbit 不可用或抓取失败时才回退到 Chromium）
+输出：YAML frontmatter（title, author, date, url, source）+ Markdown 正文（正文内保留公众号图片链接）
 失败时回退到 Step 1-2 代理服务。
 
 ### Step B: 飞书文档抓取（内置）
@@ -158,7 +169,8 @@ python3 ~/.claude/skills/markdown-proxy/scripts/fetch_feishu.py "https://xxx.fei
 ## Notes
 
 - r.jina.ai 和 defuddle.md 均免费、无需 API key
-- 公众号文章使用内置 Playwright 脚本（需 `playwright install chromium`）
+- 任何需要浏览器参与的抓取都默认优先使用 Tabbit Browser；只有 Tabbit 不可用或抓取失败时才回退到 Chrome/Chromium（需 `pip install playwright && playwright install chromium`）
+- 公众号脚本直接从浏览器 DOM 提取正文和图片链接，不依赖 `beautifulsoup4`
 - 飞书文档使用内置 API 脚本（需环境变量 `FEISHU_APP_ID` + `FEISHU_APP_SECRET`）
 - 飞书脚本自动将 blocks 转为 Markdown（标题、列表、代码块、引用、待办等）
 - 对于超长内容，可用 `| head -n 200` 先预览
